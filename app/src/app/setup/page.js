@@ -31,7 +31,7 @@ export default function SetupPage() {
     e.preventDefault();
     // Store the form data in localStorage for the test page to access
     localStorage.setItem('chatbotConfig', JSON.stringify(formData));
-    router.push('/test-api');
+    router.push('/customize');
   };
 
   return (
