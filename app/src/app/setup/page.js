@@ -31,6 +31,7 @@ export default function SetupPage() {
     console.log(formData);
     // Navigate to customization page
     // window.location.href = '/customize';
+    window.location.href = '/test-api';
   };
 
   return (
