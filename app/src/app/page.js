@@ -26,7 +26,7 @@ export default function Page() {
             </div>
             <div>
             <Link
-            href="/get-started"
+            href="/setup"
             className="inline-flex h-12 items-center justify-center rounded-lg bg-black px-8 text-sm font-medium text-white hover:bg-gray-900 transition-colors"
           >
             Get started
@@ -51,7 +51,7 @@ export default function Page() {
           Turn your expertise into a profitable AI webapp powered by DeepSeek. No coding required.
           </p>
           <Link
-            href="/get-started"
+            href="/setup"
             className="inline-flex h-12 items-center justify-center rounded-lg bg-black px-8 text-sm font-medium text-white hover:bg-gray-900 transition-colors"
           >
             Get started
