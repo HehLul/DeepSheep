@@ -1,16 +1,25 @@
 'use client';
 
-
+import { useRouter } from 'next/navigation';
 import { CheckCircle, Rocket, Settings, DollarSign, MessageCircle, BarChart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const Button = ({ children, className }) => (
-  <button className={`px-6 py-3 rounded-lg font-semibold transition ${className}`}>
+const Button = ({ children, className, onClick }) => (
+  <button 
+    className={`px-6 py-3 rounded-lg font-semibold transition ${className}`}
+    onClick={onClick}
+  >
     {children}
   </button>
 );
 
 export default function HomePage() {
+  const router = useRouter();
+
+  const handleStartBuilding = () => {
+    router.push('/setup');
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       {/* Hero Section */}
@@ -21,7 +30,10 @@ export default function HomePage() {
         <p className="mt-4 text-lg text-gray-300 md:text-xl">
           No coding required. Get started free, scale when you succeed.
         </p>
-        <Button className="mt-6 px-6 py-3 text-lg bg-blue-500 hover:bg-blue-600">
+        <Button 
+          className="mt-6 px-6 py-3 text-lg bg-blue-500 hover:bg-blue-600"
+          onClick={handleStartBuilding}
+        >
           Start Building Free
         </Button>
         <p className="mt-2 text-sm text-gray-400">No credit card required</p>
@@ -84,7 +96,12 @@ export default function HomePage() {
 
       {/* CTA Button */}
       <div className="text-center py-12">
-        <Button className="px-6 py-3 text-lg bg-blue-500 hover:bg-blue-600">Start Building Free</Button>
+        <Button 
+          className="mt-6 px-6 py-3 text-lg bg-blue-500 hover:bg-blue-600"
+          onClick={handleStartBuilding}
+        >
+          Start Building Free
+        </Button>
       </div>
 
       {/* Footer */}

@@ -3,8 +3,10 @@
 // app/setup/page.js
 import React, { useState } from 'react';
 import { ArrowRight, AlertCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function SetupPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -27,11 +29,9 @@ export default function SetupPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(formData);
-    // Navigate to customization page
-    // window.location.href = '/customize';
-    window.location.href = '/test-api';
+    // Store the form data in localStorage for the test page to access
+    localStorage.setItem('chatbotConfig', JSON.stringify(formData));
+    router.push('/test-api');
   };
 
   return (
