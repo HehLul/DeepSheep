@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -37,20 +38,20 @@ export default function SetupPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/sheep-logo.png" 
-                alt="DeepSheep Logo" 
-                className="w-8 h-8 text-blue-500"
-              />
-              <span className="text-lg font-medium">DeepSheep</span>
-            </div>
-          </div>
-        </div>
-      </nav>
+<nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex justify-between h-16 items-center">
+      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <img 
+          src="/sheep-logo.png" 
+          alt="DeepSheep Logo" 
+          className="w-8 h-8 text-blue-500"
+        />
+        <span className="text-lg font-medium">DeepSheep</span>
+      </Link>
+    </div>
+  </div>
+</nav>
 
       {/* Main Content */}
       <main className="pt-24 pb-16 px-4">

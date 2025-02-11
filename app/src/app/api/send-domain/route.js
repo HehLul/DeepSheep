@@ -6,11 +6,15 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req) {
   try {
+    console.log('📧 Starting email send process...');
+    
     const { email, subdomain, chatbotName } = await req.json();
     
+    console.log('📝 Sending email to:', email);
+
     const response = await resend.emails.send({
-      from: 'DeepSheep <onboarding@deepsheep.ai>',
-      to: email,
+      from: 'DeepSheep <noreply@prodevstudios.com>', // Your verified domain
+      to: email, // Now we can send to any email
       subject: 'Your DeepSheep AI Chatbot is Ready! 🎉',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
@@ -41,11 +45,20 @@ export async function POST(req) {
       `
     });
 
-    return NextResponse.json({ success: true });
+    console.log('📬 Email API Response:', response);
+
+    return NextResponse.json({ 
+      success: true,
+      message: 'Email sent successfully',
+      details: response
+    });
   } catch (error) {
-    console.error('Email error:', error);
+    console.error('❌ Email error:', error);
     return NextResponse.json(
-      { error: 'Failed to send email' },
+      { 
+        error: 'Failed to send email',
+        details: error.message 
+      },
       { status: 500 }
     );
   }

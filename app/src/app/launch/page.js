@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Mail, Link } from 'lucide-react';
+import { ArrowRight, Mail, Link as LinkIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
+import Link from 'next/link';
 export default function LaunchPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -33,39 +33,36 @@ export default function LaunchPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      // Send email
-      const response = await fetch('/api/send-domain', {
+      const payload = {
+        email,
+        subdomain,
+        chatbotConfig: JSON.parse(localStorage.getItem('chatbotConfig')),
+        customization: JSON.parse(localStorage.getItem('customization'))
+      };
+      
+      const response = await fetch('/api/launch-chatbot', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email,
-          subdomain,
-          chatbotName: chatbotConfig.name
-        })
+        body: JSON.stringify(payload)
       });
-
+  
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error('Failed to send email');
+        throw new Error(data.error || 'Failed to launch chatbot');
       }
-
-      // Store email in localStorage
+      
+      // Store additional info if needed
       localStorage.setItem('userEmail', email);
+      localStorage.setItem('chatbotUrl', data.url);
       
       // Set email sent state
       setEmailSent(true);
-      
-      // Wait a bit before redirecting
-      setTimeout(() => {
-        router.push(`/${subdomain}`);
-      }, 2000);
-
     } catch (error) {
       console.error('Launch error:', error);
-      alert('Failed to send email. Please try again.');
+      alert(`Failed to launch chatbot: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -74,20 +71,21 @@ export default function LaunchPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/sheep-logo.png" 
-                alt="DeepSheep Logo" 
-                className="w-8 h-8"
-              />
-              <span className="text-lg font-medium">DeepSheep</span>
-            </div>
-          </div>
-        </div>
-      </nav>
+<nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex justify-between h-16 items-center">
+      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <img 
+          src="/sheep-logo.png" 
+          alt="DeepSheep Logo" 
+          className="w-8 h-8 text-blue-500"
+        />
+        <span className="text-lg font-medium">DeepSheep</span>
+      </Link>
+    </div>
+  </div>
+</nav>
+
 
       {/* Main Content */}
       <main className="pt-24 pb-16 px-4">
@@ -178,7 +176,7 @@ export default function LaunchPage() {
                 {/* Additional Info */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex gap-3">
-                    <Link className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <LinkIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm text-blue-900">
                       <strong className="font-medium">What happens next?</strong>
                       <ul className="mt-1 ml-4 list-disc text-blue-800">
