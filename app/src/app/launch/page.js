@@ -1,18 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Check, Copy, Link, ArrowRight, Mail } from 'lucide-react';
+import { ArrowRight, Mail, Link } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function LaunchPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [subdomain, setSubdomain] = useState('');
-  const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [chatbotConfig, setChatbotConfig] = useState(null);
   const [customization, setCustomization] = useState(null);
-  const baseDomain = process.env.NODE_ENV === 'development' ? 'localhost:3000' : 'deepsheep.ai';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -22,7 +21,6 @@ export default function LaunchPage() {
       if (savedConfig) {
         const config = JSON.parse(savedConfig);
         setChatbotConfig(config);
-        // Generate subdomain from AI name
         setSubdomain(config.name.toLowerCase().replace(/[^a-z0-9]/g, ''));
       }
       
@@ -37,21 +35,40 @@ export default function LaunchPage() {
     setIsLoading(true);
 
     try {
-      // Store email in localStorage for now
+      // Send email
+      const response = await fetch('/api/send-domain', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          subdomain,
+          chatbotName: chatbotConfig.name
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      // Store email in localStorage
       localStorage.setItem('userEmail', email);
       
-      // Navigate to the subdomain
-      router.push(`/${subdomain}`);
+      // Set email sent state
+      setEmailSent(true);
+      
+      // Wait a bit before redirecting
+      setTimeout(() => {
+        router.push(`/${subdomain}`);
+      }, 2000);
+
     } catch (error) {
       console.error('Launch error:', error);
+      alert('Failed to send email. Please try again.');
+    } finally {
       setIsLoading(false);
     }
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(`http://${subdomain}.${baseDomain}`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -101,85 +118,79 @@ export default function LaunchPage() {
 
           {/* Launch Content */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-8">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-                Ready to Launch Your AI Chatbot
-              </h1>
-              <p className="text-gray-600">
-                Your chatbot is ready to go live. We'll send you the access details to your email.
-              </p>
-            </div>
-
-            {/* Domain Preview */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-medium text-gray-900">Your Chatbot URL</h2>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 bg-gray-50 px-4 py-3 rounded-lg font-mono text-sm">
-                  http://{subdomain}.{baseDomain}
+            {emailSent ? (
+              <div className="text-center space-y-4">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <Mail className="w-6 h-6 text-green-600" />
                 </div>
-                <button
-                  onClick={copyToClipboard}
-                  className="flex items-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4 text-green-600" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
+                <h2 className="text-xl font-semibold text-gray-900">Check Your Email!</h2>
+                <p className="text-gray-600">
+                  We've sent your chatbot access link to {email}. Click the link in your email to access your chatbot.
+                </p>
               </div>
-            </div>
-
-            {/* Email Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Your Email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+            ) : (
+              <>
+                <div>
+                  <h1 className="text-2xl font-semibold text-gray-900 mb-2">
+                    Ready to Launch Your AI Chatbot
+                  </h1>
+                  <p className="text-gray-600">
+                    Your chatbot is ready to go live. Enter your email and we'll send you the access link.
+                  </p>
                 </div>
-              </div>
 
-              {/* Launch Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  'Launching...'
-                ) : (
-                  <>
-                    Launch Chatbot
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
+                {/* Email Form */}
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Your Email
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
+                        className="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
 
-            {/* Additional Info */}
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex gap-3">
-                <Link className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-900">
-                  <strong className="font-medium">What happens next?</strong>
-                  <ul className="mt-1 ml-4 list-disc text-blue-800">
-                    <li>We'll send you an email with your access credentials</li>
-                    <li>Your chatbot will be live at the URL above</li>
-                    <li>You can manage your chatbot through the admin dashboard</li>
-                  </ul>
+                  {/* Launch Button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      'Sending...'
+                    ) : (
+                      <>
+                        Send Me App URL
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Additional Info */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex gap-3">
+                    <Link className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-900">
+                      <strong className="font-medium">What happens next?</strong>
+                      <ul className="mt-1 ml-4 list-disc text-blue-800">
+                        <li>Check your email for your chatbot access link</li>
+                        <li>Click the link to access your chatbot</li>
+                        <li>Share your chatbot with your audience</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </main>
