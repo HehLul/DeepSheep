@@ -1,6 +1,10 @@
 // app/api/launch-chatbot/route.js
 import { supabase } from '../../../utils/supabase';
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
+
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
@@ -101,9 +105,47 @@ export async function POST(request) {
     console.log('✅ Successfully inserted chatbot:', data);
 
     // Construct chatbot URL
-    // const chatbotUrl = `https://deepsheep.io/${subdomain}`;
-    // app/api/launch-chatbot/route.js
-const chatbotUrl = `http://localhost:3000/${subdomain}`;
+    const chatbotUrl = `http://localhost:3000/${subdomain}`;
+
+    // Send Email
+    try {
+      console.log('📧 Starting email send process...');
+      
+      const emailResponse = await resend.emails.send({
+        from: 'DeepSheep <noreply@prodevstudios.com>',
+        to: email,
+        subject: 'Your DeepSheep AI Chatbot is Ready! 🎉',
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1>Welcome to DeepSheep! 🐑</h1>
+            
+            <p>Great news! Your AI chatbot "${chatbotConfig.name}" is now live and ready to use.</p>
+            
+            <p>You can access your chatbot at:</p>
+            <div style="background: #f4f4f4; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <a href="${chatbotUrl}" style="color: #3b82f6; text-decoration: none;">
+                ${chatbotUrl}
+              </a>
+            </div>
+            <h2>What's Next?</h2>
+            <ul>
+              <li>Share your chatbot URL with your audience</li>
+              <li>Monitor your chatbot's performance in the dashboard</li>
+              <li>Customize your chatbot further anytime</li>
+            </ul>
+            <p>Need help? Reply to this email or contact our support team.</p>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eaeaea;">
+              <p style="color: #666; font-size: 14px;">Best regards,<br>The DeepSheep Team</p>
+            </div>
+          </div>
+        `
+      });
+
+      console.log('📬 Email API Response:', emailResponse);
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError);
+      // Not throwing an error to allow the chatbot creation to still succeed
+    }
 
     return NextResponse.json({ 
       message: 'Chatbot launched successfully',
