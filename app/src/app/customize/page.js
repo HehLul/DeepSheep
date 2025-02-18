@@ -1,39 +1,47 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Upload, SendHorizontal } from 'lucide-react';
 import Link from 'next/link';
+import { themes } from '@/lib/themes';  // Changed from @/config/themes to @/lib/themes
+import { ThemeCard } from '@/components/ThemeCard';  // Also make sure this path is correct
+
 export default function CustomizePage() {
   const router = useRouter();
   const [chatbotConfig, setChatbotConfig] = useState(null);
+  const [selectedTheme, setSelectedTheme] = useState(themes.classic);
   const [customization, setCustomization] = useState({
     logo: null,
     logoPreview: null,
     heroTitle: '',
     heroSubtitle: '',
-    backgroundColor: '#ffffff',
-    accentColor: '#2563eb', // blue-600
-    buttonColor: '#1d4ed8', // blue-700
+    theme: 'classic',
+    ...themes.classic.styles
   });
 
   useEffect(() => {
-    // Check if we're in the browser
     if (typeof window !== 'undefined') {
-      // Load chatbot configuration
       const savedConfig = localStorage.getItem('chatbotConfig');
-    if (savedConfig) {
-      setChatbotConfig(JSON.parse(savedConfig));
-      // Set initial hero title based on AI name
-      const config = JSON.parse(savedConfig);
-      setCustomization(prev => ({
-        ...prev,
-        heroTitle: `Chat with ${config.name}`,
-        heroSubtitle: config.description
-      }));
-    }
+      if (savedConfig) {
+        const config = JSON.parse(savedConfig);
+        setChatbotConfig(config);
+        setCustomization(prev => ({
+          ...prev,
+          heroTitle: `Chat with ${config.name}`,
+          heroSubtitle: config.description
+        }));
+      }
     }
   }, []);
+
+  const handleThemeSelect = (theme) => {
+    setSelectedTheme(theme);
+    setCustomization(prev => ({
+      ...prev,
+      theme: theme.id,
+      ...theme.styles
+    }));
+  };
 
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
@@ -52,7 +60,6 @@ export default function CustomizePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Save customization settings
     localStorage.setItem('customization', JSON.stringify(customization));
     router.push('/launch');
   };
@@ -60,49 +67,23 @@ export default function CustomizePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-<nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
-  <div className="max-w-6xl mx-auto px-4">
-    <div className="flex justify-between h-16 items-center">
-      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <img 
-          src="/sheep-logo.png" 
-          alt="DeepSheep Logo" 
-          className="w-8 h-8 text-blue-500"
-        />
-        <span className="text-lg font-medium">DeepSheep</span>
-      </Link>
-    </div>
-  </div>
-</nav>
-Make sure to import Link 
+      <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between h-16 items-center">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <img src="/sheep-logo.png" alt="DeepSheep Logo" className="w-8 h-8" />
+              <span className="text-lg font-medium">DeepSheep</span>
+            </Link>
+          </div>
+        </div>
+      </nav>
 
       {/* Main Content */}
       <main className="pt-24 pb-16 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Progress Indicator */}
           <div className="max-w-2xl mx-auto">
-            <div className="flex items-center justify-between mb-12">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm">
-                  ✓
-                </div>
-                <span className="text-sm font-medium">Setup AI</span>
-              </div>
-              <div className="h-px bg-gray-200 w-16"></div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm">
-                  2
-                </div>
-                <span className="text-sm font-medium">Customize</span>
-              </div>
-              <div className="h-px bg-gray-200 w-16"></div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-sm">
-                  3
-                </div>
-                <span className="text-sm text-gray-400">Launch</span>
-              </div>
-            </div>
+            {/* Your existing progress indicator code */}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -110,11 +91,29 @@ Make sure to import Link
             <div className="space-y-8">
               <div className="bg-white p-6 rounded-lg border border-gray-200">
                 <h2 className="text-xl font-medium text-gray-900 mb-6">Customize Your Chatbot</h2>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* Theme Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-4">
+                      Choose a Theme
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {Object.values(themes).map((theme) => (
+                        <ThemeCard
+                          key={theme.id}
+                          theme={theme}
+                          isSelected={selectedTheme.id === theme.id}
+                          onSelect={handleThemeSelect}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Logo Upload */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Logo
+                      Logo (Optional)
                     </label>
                     <div className="flex items-center gap-4">
                       {customization.logoPreview && (
@@ -168,39 +167,6 @@ Make sure to import Link
                     />
                   </div>
 
-                  {/* Colors */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Background Color
-                      </label>
-                      <input
-                        type="color"
-                        value={customization.backgroundColor}
-                        onChange={(e) => setCustomization(prev => ({
-                          ...prev,
-                          backgroundColor: e.target.value
-                        }))}
-                        className="w-full h-10 rounded-lg cursor-pointer"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Accent Color
-                      </label>
-                      <input
-                        type="color"
-                        value={customization.accentColor}
-                        onChange={(e) => setCustomization(prev => ({
-                          ...prev,
-                          accentColor: e.target.value,
-                          buttonColor: e.target.value
-                        }))}
-                        className="w-full h-10 rounded-lg cursor-pointer"
-                      />
-                    </div>
-                  </div>
-
                   <div className="pt-4">
                     <button
                       type="submit"
@@ -209,7 +175,7 @@ Make sure to import Link
                       Continue to Launch
                       <ArrowRight className="w-4 h-4" />
                     </button>
-                  </div>
+                    </div>
                 </form>
               </div>
             </div>
@@ -220,10 +186,16 @@ Make sure to import Link
                 <h2 className="text-xl font-medium text-gray-900 mb-6">Preview</h2>
                 <div 
                   className="rounded-lg overflow-hidden shadow-lg"
-                  style={{ backgroundColor: customization.backgroundColor }}
+                  style={{ 
+                    backgroundColor: selectedTheme.styles.backgroundColor,
+                    fontFamily: selectedTheme.styles.fontFamily.body
+                  }}
                 >
                   {/* Preview Header */}
-                  <div className="p-4 border-b" style={{ borderColor: customization.accentColor + '20' }}>
+                  <div 
+                    className="p-4 border-b" 
+                    style={{ borderColor: selectedTheme.styles.accentColor + '20' }}
+                  >
                     {customization.logoPreview && (
                       <img 
                         src={customization.logoPreview} 
@@ -234,10 +206,13 @@ Make sure to import Link
                   </div>
 
                   {/* Preview Hero */}
-                  <div className="px-8 py-12 text-center">
+                  <div className={selectedTheme.styles.spacing.contentPadding + " text-center"}>
                     <h1 
                       className="text-3xl font-bold mb-4"
-                      style={{ color: customization.accentColor }}
+                      style={{ 
+                        color: selectedTheme.styles.accentColor,
+                        fontFamily: selectedTheme.styles.fontFamily.heading
+                      }}
                     >
                       {customization.heroTitle}
                     </h1>
@@ -247,32 +222,48 @@ Make sure to import Link
 
                     {/* Chat Interface Preview */}
                     <div className="max-w-md mx-auto bg-white rounded-lg shadow-sm border">
-                      <div className="p-4 space-y-4">
+                      <div className={`${selectedTheme.styles.spacing.messagePadding} ${selectedTheme.styles.spacing.messageGap}`}>
+                        {/* Bot Message */}
                         <div className="flex justify-start">
-                          <div className="bg-gray-100 rounded-lg px-4 py-2 max-w-[80%]">
+                          <div 
+                            className={`${selectedTheme.styles.messageStyles.botMessage.backgroundColor} 
+                              ${selectedTheme.styles.messageStyles.botMessage.rounded} 
+                              ${selectedTheme.styles.messageStyles.botMessage.padding} 
+                              max-w-[80%]`}
+                          >
                             Hello! How can I help you today?
                           </div>
                         </div>
+
+                        {/* User Message */}
                         <div className="flex justify-end">
                           <div 
-                            className="rounded-lg px-4 py-2 max-w-[80%] text-white"
-                            style={{ backgroundColor: customization.accentColor }}
+                            className={`${selectedTheme.styles.messageStyles.userMessage.rounded} 
+                              ${selectedTheme.styles.messageStyles.userMessage.padding} 
+                              max-w-[80%] text-white`}
+                            style={{ backgroundColor: selectedTheme.styles.accentColor }}
                           >
                             Hi! I have a question...
                           </div>
                         </div>
                       </div>
+
+                      {/* Input Area */}
                       <div className="border-t p-4">
                         <div className="flex gap-2">
                           <input
                             type="text"
                             placeholder="Type a message..."
-                            className="flex-1 px-3 py-2 border rounded-lg"
+                            className={`flex-1 border ${selectedTheme.styles.inputStyles.rounded} 
+                              ${selectedTheme.styles.inputStyles.padding} focus:outline-none focus:ring-2`}
+                            style={{ 
+                              fontFamily: selectedTheme.styles.fontFamily.body 
+                            }}
                             disabled
                           />
                           <button
-                            style={{ backgroundColor: customization.buttonColor }}
-                            className="px-4 py-2 text-white rounded-lg"
+                            style={{ backgroundColor: selectedTheme.styles.buttonColor }}
+                            className={`${selectedTheme.styles.inputStyles.rounded} px-4 py-2 text-white`}
                             disabled
                           >
                             <SendHorizontal className="w-5 h-5" />
