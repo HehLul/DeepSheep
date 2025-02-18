@@ -3,12 +3,11 @@ import { supabase } from '../../../utils/supabase';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-// Initialize Resend
+const CHATBOT_LIMIT = 100;
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
-    // Log the entire request body for debugging
     const requestBody = await request.json();
     console.log('🚀 Received Request Body:', JSON.stringify(requestBody, null, 2));
 
@@ -19,57 +18,57 @@ export async function POST(request) {
       subdomain 
     } = requestBody;
 
-    // Detailed input validation logging
-    console.log('📋 Received Data:');
-    console.log('Email:', email);
-    console.log('Subdomain:', subdomain);
-    console.log('Chatbot Config Exists:', !!chatbotConfig);
-    console.log('Customization Exists:', !!customization);
-
-    // Validate input with more detailed error reporting
-    if (!chatbotConfig) {
-      console.error('❌ Missing chatbot configuration');
+    // Validate input
+    if (!chatbotConfig || !customization || !email || !subdomain) {
+      const missingFields = [];
+      if (!chatbotConfig) missingFields.push('chatbot configuration');
+      if (!customization) missingFields.push('customization');
+      if (!email) missingFields.push('email');
+      if (!subdomain) missingFields.push('subdomain');
+      
+      console.error(`❌ Missing fields: ${missingFields.join(', ')}`);
       return NextResponse.json(
-        { error: 'Missing chatbot configuration' }, 
-        { status: 400 }
-      );
-    }
-    if (!customization) {
-      console.error('❌ Missing customization');
-      return NextResponse.json(
-        { error: 'Missing customization' }, 
-        { status: 400 }
-      );
-    }
-    if (!email) {
-      console.error('❌ Missing email');
-      return NextResponse.json(
-        { error: 'Missing email' }, 
-        { status: 400 }
-      );
-    }
-    if (!subdomain) {
-      console.error('❌ Missing subdomain');
-      return NextResponse.json(
-        { error: 'Missing subdomain' }, 
+        { error: `Missing required fields: ${missingFields.join(', ')}` }, 
         { status: 400 }
       );
     }
 
-    // Log subdomain check
+    // Check total number of chatbots
+    console.log('🔢 Checking total chatbot count');
+    const { count: totalChatbots, error: countError } = await supabase
+      .from('chatbots')
+      .select('*', { count: 'exact' });
+
+    if (countError) {
+      console.error('❌ Error checking chatbot count:', countError);
+      throw countError;
+    }
+
+    console.log('📊 Total chatbots:', totalChatbots);
+    if (totalChatbots >= CHATBOT_LIMIT) {
+      console.error('❌ Chatbot limit reached');
+      return NextResponse.json(
+        { 
+          error: 'Maximum chatbot limit reached',
+          message: 'Due to high demand, we have reached our current limit of chatbots. Please try again later or contact support for enterprise access.'
+        }, 
+        { status: 403 }
+      );
+    }
+
+    // Check subdomain uniqueness
     console.log('🔍 Checking subdomain uniqueness');
-    const { count, error: countError } = await supabase
+    const { count: subdomainCount, error: subdomainError } = await supabase
       .from('chatbots')
       .select('*', { count: 'exact' })
       .eq('subdomain', subdomain);
 
-    if (countError) {
-      console.error('❌ Error checking subdomain:', countError);
-      throw countError;
+    if (subdomainError) {
+      console.error('❌ Error checking subdomain:', subdomainError);
+      throw subdomainError;
     }
 
-    console.log('📊 Subdomain count:', count);
-    if (count > 0) {
+    if (subdomainCount > 0) {
       console.error('❌ Subdomain already exists');
       return NextResponse.json(
         { error: 'Subdomain already exists' }, 
@@ -77,7 +76,7 @@ export async function POST(request) {
       );
     }
 
-    // Prepare insertion data
+    // Prepare and insert data
     const insertData = {
       name: chatbotConfig.name,
       description: chatbotConfig.description,
@@ -91,7 +90,6 @@ export async function POST(request) {
 
     console.log('📝 Insertion Data:', JSON.stringify(insertData, null, 2));
 
-    // Insert chatbot configuration
     const { data, error } = await supabase
       .from('chatbots')
       .insert(insertData)
@@ -144,7 +142,6 @@ export async function POST(request) {
       console.log('📬 Email API Response:', emailResponse);
     } catch (emailError) {
       console.error('❌ Email sending failed:', emailError);
-      // Not throwing an error to allow the chatbot creation to still succeed
     }
 
     return NextResponse.json({ 

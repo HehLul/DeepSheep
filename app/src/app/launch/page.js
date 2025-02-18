@@ -1,9 +1,9 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Mail, Link as LinkIcon } from 'lucide-react';
+import { ArrowRight, Mail, Link as LinkIcon, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
 export default function LaunchPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -12,6 +12,7 @@ export default function LaunchPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [chatbotConfig, setChatbotConfig] = useState(null);
   const [customization, setCustomization] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -33,6 +34,8 @@ export default function LaunchPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null); // Clear any previous errors
+
     try {
       const payload = {
         email,
@@ -50,7 +53,12 @@ export default function LaunchPage() {
       });
   
       const data = await response.json();
+      
       if (!response.ok) {
+        // Handle specific error cases
+        if (response.status === 403 && data.error === 'Maximum chatbot limit reached') {
+          throw new Error(data.message || 'Maximum limit of chatbots reached. Please try again later.');
+        }
         throw new Error(data.error || 'Failed to launch chatbot');
       }
       
@@ -62,7 +70,7 @@ export default function LaunchPage() {
       setEmailSent(true);
     } catch (error) {
       console.error('Launch error:', error);
-      alert(`Failed to launch chatbot: ${error.message}`);
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -70,52 +78,41 @@ export default function LaunchPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-<nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
-  <div className="max-w-6xl mx-auto px-4">
-    <div className="flex justify-between h-16 items-center">
-      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <img 
-          src="/sheep-logo.png" 
-          alt="DeepSheep Logo" 
-          className="w-8 h-8 text-blue-500"
-        />
-        <span className="text-lg font-medium">DeepSheep</span>
-      </Link>
-    </div>
-  </div>
-</nav>
-
+      {/* Navigation (keep your existing nav code) */}
+      <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
+        {/* ... your existing nav code ... */}
+      </nav>
 
       {/* Main Content */}
       <main className="pt-24 pb-16 px-4">
         <div className="max-w-2xl mx-auto">
-          {/* Progress Indicator */}
+          {/* Progress Indicator (keep your existing progress code) */}
           <div className="flex items-center justify-between mb-12">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm">
-                ✓
-              </div>
-              <span className="text-sm font-medium">Setup AI</span>
-            </div>
-            <div className="h-px bg-gray-200 w-16"></div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm">
-                ✓
-              </div>
-              <span className="text-sm font-medium">Customize</span>
-            </div>
-            <div className="h-px bg-gray-200 w-16"></div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm">
-                3
-              </div>
-              <span className="text-sm font-medium">Launch</span>
-            </div>
+            {/* ... your existing progress indicator code ... */}
           </div>
 
           {/* Launch Content */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-8">
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3 items-start">
+                <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-red-800">Unable to Launch Chatbot</h3>
+                  <p className="mt-1 text-sm text-red-700">{error}</p>
+                  {error.includes('Maximum limit') && (
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>We're experiencing high demand for our beta. Please:</p>
+                      <ul className="list-disc ml-5 mt-1">
+                        <li>Try again later when spots open up</li>
+                        <li>Contact support for enterprise access</li>
+                        <li>Join our waitlist for priority access</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {emailSent ? (
               <div className="text-center space-y-4">
                 <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
