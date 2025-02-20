@@ -12,7 +12,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const TOKEN_LIMIT = process.env.NODE_ENV === "development" ? 100 : 50000;
+const TOKEN_LIMIT = process.env.NODE_ENV === "development" ? 1000 : 50000;
 
 // Simplified token estimation function
 function estimateTokens(text) {

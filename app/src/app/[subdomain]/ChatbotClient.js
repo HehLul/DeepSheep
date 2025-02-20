@@ -206,7 +206,7 @@ export default function ChatbotClient({ initialConfig, subdomain }) {
             href="/"
             className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
           >
-            made by DeepSheep
+            Powered by DeepSheep
           </a>
         </div>
       </div>
