@@ -3,6 +3,8 @@ import { supabase } from '../../../utils/supabase';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
+// Near the top of your route.js
+const isDevelopment = process.env.NODE_ENV === 'development';
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 const CHATBOT_LIMIT = 300;
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -103,8 +105,16 @@ export async function POST(request) {
 
     console.log('✅ Successfully inserted chatbot:', data);
 
-    // Construct chatbot URL
-    const chatbotUrl = `${baseUrl}/${subdomain}`;
+// Then when constructing the URL:
+const productionUrl = `https://${subdomain}.deepsheep.io`;
+const developmentUrl = `http://localhost:3000/${subdomain}`;
+if (isDevelopment) {
+  console.log('Development URL:', developmentUrl);
+  console.log('Production URL (for reference):', productionUrl);
+}
+
+const chatbotUrl = isDevelopment ? developmentUrl : productionUrl;
+
 
     // Send Email
     try {
