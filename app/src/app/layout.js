@@ -44,6 +44,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <link rel="icon" type="image/png" href="/sheep.png" />
       <body
         className={`${geistSans.variable} ${geistMono.variable} 
           ${plusJakarta.variable} ${quicksand.variable} 
