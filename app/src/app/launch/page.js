@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowRight, Mail, Link as LinkIcon, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FeedbackButton } from '@/components/FeedbackButton';
 
 export default function LaunchPage() {
   const router = useRouter();
@@ -78,10 +79,23 @@ export default function LaunchPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation (keep your existing nav code) */}
       <nav className="fixed w-full bg-white/80 backdrop-blur-sm z-50 border-b border-gray-100">
-        {/* ... your existing nav code ... */}
-      </nav>
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex justify-between h-16 items-center">
+      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <img 
+          src="/sheep-logo.png" 
+          alt="DeepSheep Logo" 
+          className="w-8 h-8 text-blue-500"
+        />
+        <span className="text-lg font-medium">DeepSheep</span>
+      </Link>
+     
+        <FeedbackButton />
+      
+    </div>
+  </div>
+</nav>
 
       {/* Main Content */}
       <main className="pt-24 pb-16 px-4">

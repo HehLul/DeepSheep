@@ -5,6 +5,7 @@ import { ArrowRight, Upload, SendHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { themes } from '@/lib/themes';  // Changed from @/config/themes to @/lib/themes
 import { ThemeCard } from '@/components/ThemeCard';  // Also make sure this path is correct
+import { FeedbackButton } from '@/components/FeedbackButton';
 
 export default function CustomizePage() {
   const router = useRouter();
@@ -74,6 +75,9 @@ export default function CustomizePage() {
               <img src="/sheep-logo.png" alt="DeepSheep Logo" className="w-8 h-8" />
               <span className="text-lg font-medium">DeepSheep</span>
             </Link>
+       
+              <FeedbackButton />
+            
           </div>
         </div>
       </nav>

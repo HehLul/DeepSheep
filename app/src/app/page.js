@@ -91,16 +91,16 @@ export default function HomePage() {
   const includedFeatures = [
     'Instant chatbot deployment',
     'Custom branding and design',
-    'Built-in monetization',
     '50,000 free tokens',
-    'Real-time analytics'
+    'Train AI with custom instructions',
   ];
 
   const comingSoon = [
+    'User Dashboard',
+    'Built-in monetization',
+    'Real-time analytics',
     'Multiple chatbots',
-    'Advanced analytics dashboard',
-    'Team collaboration',
-    'Custom domain support'
+
   ];
 
   return (

@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FeedbackButton } from '@/components/FeedbackButton';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -49,6 +50,9 @@ export default function SetupPage() {
         />
         <span className="text-lg font-medium">DeepSheep</span>
       </Link>
+     
+        <FeedbackButton />
+      
     </div>
   </div>
 </nav>
