@@ -106,7 +106,8 @@ export async function POST(request) {
     console.log('✅ Successfully inserted chatbot:', data);
 
 // Then when constructing the URL:
-const productionUrl = `https://${subdomain}.deepsheep.io`;
+// const  = `https://${subdomain}.deepsheep.io`;
+const productionUrl = `https://deepsheep.io/${subdomain}`;
 const developmentUrl = `http://localhost:3000/${subdomain}`;
 if (isDevelopment) {
   console.log('Development URL:', developmentUrl);
